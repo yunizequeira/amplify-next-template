@@ -1,57 +1,63 @@
-// app/page.tsx
+import { Suspense } from "react";
+import Banner from "@/src/components/UI/Banner";
+import PopularServices from "@/src/components/UI/PopularServices";
+import ProviderFleet from "../components/UI/ProviderFleet";
+import BannerMedio from "../components/UI/BannerMedio";
+import InfoComponent from "../components/UI/InfoComponent";
+import { type Metadata } from "next";
+import GallerySlice from "../components/UI/GallerySlice";
+import ModalNew from "../components/UI/ModalNew";
+import BannerContact from "../components/UI/BannerContact";
+import {fleets} from '@/src/libs/Const'
 
-import { revalidatePath } from "next/cache";
+export const metadata: Metadata = {
+  title: "The Best Limo Services: Las Vegas Nevada - Moreture",
+  description:
+    "High-quality limousine service in Las Vegas,Nevada. Book your limousine now.",
+};
 
-import {
-  AuthGetCurrentUserServer,
-  cookiesClient,
-} from "@/src/utils/amplify-utils";
+type Props = {
+  searchParams?: Record<string, string> | null | undefined;
+};
 
-import Logout from "@/src/components/Logout";
-import Login from "../components/Login";
-import ShowTodo from "../components/ShowTodo";
+const App = (props: Props) => {
+  const showModal = props.searchParams?.modal === "true";
+  const productid = props.searchParams?.id;
 
-async function App() {
-  const user = await AuthGetCurrentUserServer();
-  console.log(user);
-  if (user) {
-    return (
-      <div className=" min-h-screen bg-gradient-to-r from-cyan-400 to-pink-400 flex justify-center items-center">
-        <div className=" p-10 space-y-4 bg-slate-900/50 rounded-md">
-          <h1>Hello, {user.signInDetails?.loginId} 👋</h1>
-          {user && <Logout />}
-          <form action={addTodo} className="flex flex-col gap-2">
-            <label htmlFor="title">Tittle</label>
-            <input
-              type="text"
-              name="title"
-              className="h-10 rounded px-2"
-              placeholder="Enter title"
-            />
-            <button
-              type="submit"
-              className="p-2 bg-black text-white rounded-md"
-            >
-              Add Todo
-            </button>
-          </form>
-
-          <ShowTodo />
+  return (
+    <div>
+      <section className="">
+        <Suspense fallback={<p>Loading video...</p>}>
+          <Banner />
+        </Suspense>
+      </section>
+      <section id="popular" className="w-full space-y-10 mx-auto py-10">
+        <PopularServices />
+      </section>
+      <section id="fleet" className="w-full space-y-10 mx-auto px-5 ">
+        <ProviderFleet />
+      </section>
+      <section className="">
+        <BannerMedio />
+      </section>
+      <section className=" py-10 px-5 ">
+        <InfoComponent />
+      </section>
+      <section className="py-10 ">
+        <div className="py-4">
+          <h2 className="text-center text-4xl font-light capitalize">
+            {" "}
+            Gallery{" "}
+          </h2>
         </div>
-      </div>
-    );
-  } else {
-    return <Login />;
-  }
-}
-
-async function addTodo(data: FormData) {
-  "use server";
-  const title = data.get("title") as string;
-  await cookiesClient.models.Todo.create({
-    content: title,
-  });
-  revalidatePath("/");
-}
+        <GallerySlice fleets={fleets} />
+      </section>
+      <section id="contact">
+        <BannerContact />
+      </section>
+      {showModal && productid && <ModalNew productid={productid} close="/" />}
+    </div>
+  );
+};
 
 export default App;

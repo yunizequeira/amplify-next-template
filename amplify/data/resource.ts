@@ -7,12 +7,42 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
+  Service: a
     .model({
-      content: a.string(),
-      taskid: a.string(),
+      serviceId: a.id(),
+      name: a.string().required(),
+      image: a.string().required(),
+      price: a.float().required(),
+      description: a.string().required(),
+      time: a.float().required(),
+      typeService: a.string().required(),
+      typePrice: a.string().required(),
+      available: a.boolean().required(),
+      serviceid:a.id(),
+      customer: a.hasOne('Order', 'tripId'),
     })
-    .authorization(allow => [allow.owner()]),
+    .authorization((allow) => [
+      allow.owner(),
+      allow.publicApiKey().to(["read"]),
+    ]),
+
+  Order: a
+    .model({
+      name: a.string().required(),
+      email: a.string().required(),
+      phone: a.string().required(),
+      tripId: a.id().required(),
+      datepickup: a.string().required(),
+      addresspickup: a.string().required(),
+      addressdrop: a.string().required(),
+      todo:a.boolean().required(),
+      time:a.string().required(),
+      serviceId:a.belongsTo('Service', 'tripId'),
+    })
+    .authorization((allow) => [
+      allow.publicApiKey(),
+    ]),
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -20,10 +50,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "userPool",
-    // apiKeyAuthorizationMode: {
-    //   expiresInDays: 30,
-    // },
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });
 
